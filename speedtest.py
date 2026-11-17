@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Измеряет скорость скачивания: N последовательных запросов к одному адресу."""
+"""Измеряет скорость скачивания: N последовательных запросов к адресу."""
 
 import argparse
 import sys
@@ -45,11 +45,20 @@ def format_bytes(n: int) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Делает N последовательных запросов к адресу и считает скорость скачивания."
+        description="Делает N последовательных запросов к адресу "
+                    "и считает скорость скачивания."
     )
-    parser.add_argument("url", help="адрес для скачивания, например тяжёлая картинка")
-    parser.add_argument("-n", "--count", type=int, default=10, help="число запросов (по умолчанию 10)")
-    parser.add_argument("-t", "--timeout", type=float, default=30.0, help="таймаут сокета в секундах (по умолчанию 30)")
+    parser.add_argument(
+        "url", help="адрес для скачивания, например тяжёлая картинка"
+    )
+    parser.add_argument(
+        "-n", "--count", type=int, default=10,
+        help="число запросов (по умолчанию 10)",
+    )
+    parser.add_argument(
+        "-t", "--timeout", type=float, default=30.0,
+        help="таймаут сокета в секундах (по умолчанию 30)",
+    )
     args = parser.parse_args()
 
     if urllib.parse.urlparse(args.url).scheme not in ("http", "https"):
@@ -62,7 +71,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    sys.stdout.reconfigure(line_buffering=True)  # прогресс виден сразу, даже при перенаправлении вывода
+    # Прогресс виден сразу, даже при перенаправлении вывода в файл/пайп.
+    sys.stdout.reconfigure(line_buffering=True)
     args = parse_args()
     total_bytes = 0
     total_time = 0.0
@@ -74,7 +84,8 @@ def main() -> int:
         try:
             size, elapsed = fetch(args.url, args.timeout)
         except urllib.error.HTTPError as e:
-            print(f"Запрос {i}: сервер ответил {e.code} {e.reason}", file=sys.stderr)
+            print(f"Запрос {i}: сервер ответил {e.code} {e.reason}",
+                  file=sys.stderr)
             return 1
         except (urllib.error.URLError, OSError) as e:
             reason = getattr(e, "reason", e)
@@ -92,8 +103,10 @@ def main() -> int:
 
     print()
     print(f"Среднее время запроса: {avg_time:.3f} с")
-    print(f"Всего скачано:         {format_bytes(total_bytes)} ({total_bytes} байт)")
-    print(f"Скорость скачивания:   {mbit_per_sec:.2f} Мбит/с ({mbyte_per_sec:.2f} МБ/с)")
+    print(f"Всего скачано:         {format_bytes(total_bytes)} "
+          f"({total_bytes} байт)")
+    print(f"Скорость скачивания:   {mbit_per_sec:.2f} Мбит/с "
+          f"({mbyte_per_sec:.2f} МБ/с)")
     return 0
 
 
